@@ -403,6 +403,8 @@ tmux_conf_uninstall_plugins_on_reload=true
 #set -g @plugin 'tmux-plugins/tmux-resurrect'
 #set -g @plugin 'tmux-plugins/tmux-continuum'
 #set -g @continuum-restore 'on'
+
+# git clone https://github.com/MunifTanjim/tmux-suspend.git ~/.tmux/plugins/tmux-suspend
 #set -g @suspend_suspended_options " \
 #  @suspend_status:: ---- , \
 #"
