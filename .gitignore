@@ -1,1 +1,9 @@
 plugins/**
+
+# AIs
+GEMINI.md
+.geimi/
+CLAUDE.md
+.claude/
+.kiro/
+commit_msg.txt

@@ -372,6 +372,9 @@ tmux_conf_theme_clock_style="24"
 # on Linux, this requires xsel, xclip or wl-copy
 tmux_conf_copy_to_os_clipboard=true
 
+# enable OSC 52 to allow remote tmux to write to local clipboard over SSH
+set -s set-clipboard on
+
 
 # -- urlscan -------------------------------------------------------------------
 
