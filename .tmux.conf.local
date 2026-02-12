@@ -458,7 +458,7 @@ tmux_conf_uninstall_plugins_on_reload=true
 
 # git clone https://github.com/MunifTanjim/tmux-suspend.git ~/.tmux/plugins/tmux-suspend
 set -g @suspend_suspended_options " \
-  @suspend_status:: ---- , \
+  @suspend_status:: ⏸ SUSPENDED , \
 "
 run-shell ~/.tmux/plugins/tmux-suspend/suspend.tmux
 
