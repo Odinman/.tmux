@@ -125,7 +125,7 @@ tmux_conf_theme_colour_17="#e4e4e4"   # white
 
 # window style
 tmux_conf_theme_window_fg="default"
-tmux_conf_theme_window_bg="default"
+tmux_conf_theme_window_bg="#282828"            # Gruvbox bg0 (非活跃 pane 正常)
 
 # highlight focused pane, possible values are:
 #   - true
@@ -133,7 +133,7 @@ tmux_conf_theme_window_bg="default"
 tmux_conf_theme_highlight_focused_pane=true
 
 # focused pane colours:
-tmux_conf_theme_focused_pane_bg="#282828"     # Gruvbox bg0 (正常背景)
+tmux_conf_theme_focused_pane_bg="#1d2021"     # Gruvbox bg0_h (活跃 pane 更深)
 
 # pane border style, possible values are:
 #   - thin (default)
@@ -411,32 +411,58 @@ tmux_conf_urlscan_options="--compact --dedupe"
 bind m run "cut -c3- '#{TMUX_CONF}' | sh -s _toggle_mouse" \; display 'mouse #{?#{mouse},on,off}'
 
 # status line position: top normally, bottom when nested inside another tmux
-if-shell '[ -n "$TMUX" ]' \
+# - TMUX_OUTER     : set by the local fish tmux wrapper (~/.config/fish/functions/tmux.fish)
+#                    when spawning a nested tmux on the same host
+# - LC_TMUX_OUTER  : set by the local fish ssh wrapper (~/.config/fish/functions/ssh.fish)
+#                    and carried across ssh via SendEnv/AcceptEnv LC_* — marks remote
+#                    tmuxes as nested when the originating shell was already in tmux
+if-shell '[ -n "$TMUX_OUTER" ] || [ -n "$LC_TMUX_OUTER" ]' \
   'set -g status-position bottom' \
   'set -g status-position top'
 
+# manual override: <prefix> T toggles status line between top and bottom,
+# in case the auto-detection above gets it wrong. kept single-line and without
+# `-N` for compat with tmux < 3.1
+bind T if-shell '[ "$(tmux show -gv status-position)" = "top" ]' 'set -g status-position bottom ; display "status-position: bottom"' 'set -g status-position top ; display "status-position: top"'
+
 # 非活跃 pane 背景暗一点，活跃 pane 正常背景
-set -g window-style 'bg=#1d2021'              # Gruvbox bg0_h (暗)
-set -g window-active-style 'bg=#282828'       # Gruvbox bg0 (正常)
+set -g window-style 'bg=#282828'              # Gruvbox bg0 (非活跃 正常)
+set -g window-active-style 'bg=#1d2021'       # Gruvbox bg0_h (活跃 更深)
 
 
 # -- popups --------------------------------------------------------------------
+# popups require tmux >= 3.3 (display-popup needs >= 3.2; popup-* style
+# options need >= 3.3). On older tmux, the same keys show a diagnostic
+# message instead of silently failing.
+
+%if #{>=:#{version},3.3}
 
 # popup cosmetics (Gruvbox)
 set -g popup-border-lines rounded
 set -g popup-border-style 'fg=#83a598'        # Gruvbox blue
 set -g popup-style        'bg=#282828'        # Gruvbox bg0
 
-# scratchpad session in a popup (Alt-backtick, no prefix)
-bind -n M-` display-popup -E -w 80% -h 80% -d "#{pane_current_path}" \
+# scratchpad session in a popup (<prefix> `)
+bind ` display-popup -E -w 80% -h 80% -d "#{pane_current_path}" \
   "tmux attach -t scratch || tmux new -s scratch"
 
-# fzf-based session switcher (<prefix> C-j)
-bind C-j display-popup -E -w 60% -h 60% \
-  "tmux list-sessions -F '#{session_name}' \
+# fzf-based session switcher (<prefix> C-j); falls back to a message
+# when fzf is not installed
+bind C-j if-shell 'command -v fzf >/dev/null 2>&1' {
+  display-popup -E -w 60% -h 60% "tmux list-sessions -F '#{session_name}' \
    | grep -v \"^$(tmux display -p '#S')\$\" \
    | fzf --reverse --prompt='session> ' \
    | xargs -r tmux switch-client -t"
+} {
+  display-message "fzf not found in \$PATH — install with 'brew install fzf'"
+}
+
+%endif
+
+%if #{<:#{version},3.3}
+bind ` display-message "popups need tmux >= 3.3 (current: #{version})"
+bind C-j display-message "popups need tmux >= 3.3 (current: #{version})"
+%endif
 
 
 # -- tpm -----------------------------------------------------------------------
