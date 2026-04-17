@@ -420,6 +420,25 @@ set -g window-style 'bg=#1d2021'              # Gruvbox bg0_h (暗)
 set -g window-active-style 'bg=#282828'       # Gruvbox bg0 (正常)
 
 
+# -- popups --------------------------------------------------------------------
+
+# popup cosmetics (Gruvbox)
+set -g popup-border-lines rounded
+set -g popup-border-style 'fg=#83a598'        # Gruvbox blue
+set -g popup-style        'bg=#282828'        # Gruvbox bg0
+
+# scratchpad session in a popup (Alt-backtick, no prefix)
+bind -n M-` display-popup -E -w 80% -h 80% -d "#{pane_current_path}" \
+  "tmux attach -t scratch || tmux new -s scratch"
+
+# fzf-based session switcher (<prefix> C-j)
+bind C-j display-popup -E -w 60% -h 60% \
+  "tmux list-sessions -F '#{session_name}' \
+   | grep -v \"^$(tmux display -p '#S')\$\" \
+   | fzf --reverse --prompt='session> ' \
+   | xargs -r tmux switch-client -t"
+
+
 # -- tpm -----------------------------------------------------------------------
 
 # while I don't use tpm myself, many people requested official support so here
